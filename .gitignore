@@ -1,0 +1,23 @@
+# Ignora i file CSV
+*.csv
+
+# Ignora i file Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignora i file di ambiente virtuale
+venv/
+.env
+
+# Ignora i file di configurazione IDE
+.vscode/
+.idea/
+
+# Ignora i file di log
+*.log
+
+# Ignora i file di sistema
+.DS_Store
+*.swp
