@@ -112,9 +112,9 @@ Per la fascia diurna, il calcolo viene effettuato come segue:
 - **Durata**: 16 ore (57600 secondi).
 - **Formula**:
 
-  $$
+```math
   \text{Leq\_Day} = 10 \cdot \log_{10} \left( \frac{1}{57600} \cdot \sum_{i} 10^{(\text{Measure}_i / 10)} \right)
-  $$
+```
 
   - **Spiegazione**: La formula calcola il livello equivalente di rumore durante il giorno come la media logaritmica ponderata dei valori di rumore. Qui, $\sum$ rappresenta la somma dei valori di rumore convertiti dalla scala dei decibel a una scala lineare.
 
@@ -124,9 +124,9 @@ Per la fascia notturna, il calcolo viene effettuato come segue:
 - **Durata**: 8 ore (28800 secondi).
 - **Formula**:
 
-  $$
+```math
   \text{Leq\_Night} = 10 \cdot \log_{10} \left( \frac{1}{28800} \cdot \sum_{i} 10^{(\text{Measure}_i / 10)} \right)
-  $$
+```
 
   - **Spiegazione**: La formula calcola il livello equivalente di rumore durante la notte come la media logaritmica ponderata dei valori di rumore. Anche in questo caso, $\sum$ rappresenta la somma dei valori di rumore convertiti dalla scala dei decibel a una scala lineare.
 
