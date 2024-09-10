@@ -84,7 +84,7 @@ Data        Leq_Diurno   Leq_Notturno
 ...
 ```
 
-## Calcolo del Livello Equivalente di Rumore (Leq)
+### Calcolo del Livello Equivalente di Rumore (Leq)
 
 Lo script `analysis.py` calcola i livelli di rumore equivalente (Leq) per due fasce orarie: diurna e notturna. Ecco come viene effettuato il calcolo:
 
@@ -111,24 +111,26 @@ I dati vengono suddivisi in due fasce orarie:
 Per la fascia diurna, il calcolo viene effettuato come segue:
 - **Durata**: 16 ore (57600 secondi).
 - **Formula**:
+  
+  `Leq_Day = 10 * log10((1 / 57600) * Σ(10^(Measure_i / 10)))`
 
-  \[
-  \text{Leq\_Day} = 10 \cdot \log_{10}\left(\frac{1}{57600} \cdot \sum_{i} 10^{(\text{Measure}_i / 10)}\right)
-  \]
-
-  - **Spiegazione**: La formula calcola il livello equivalente di rumore durante il giorno come la media logaritmica ponderata dei valori di rumore.
+  - **Spiegazione**: La formula calcola il livello equivalente di rumore durante il giorno come la media logaritmica ponderata dei valori di rumore. Qui, Σ rappresenta la somma dei valori di rumore convertiti dalla scala dei decibel a una scala lineare.
 
 #### Leq notturno
 
 Per la fascia notturna, il calcolo viene effettuato come segue:
 - **Durata**: 8 ore (28800 secondi).
 - **Formula**:
+  
+  `Leq_Night = 10 * log10((1 / 28800) * Σ(10^(Measure_i / 10)))`
 
-  \[
-  \text{Leq\_Night} = 10 \cdot \log_{10}\left(\frac{1}{28800} \cdot \sum_{i} 10^{(\text{Measure}_i / 10)}\right)
-  \]
+  - **Spiegazione**: La formula calcola il livello equivalente di rumore durante la notte come la media logaritmica ponderata dei valori di rumore. Anche in questo caso, Σ rappresenta la somma dei valori di rumore convertiti dalla scala dei decibel a una scala lineare.
 
-  - **Spiegazione**: La formula calcola il livello equivalente di rumore durante la notte come la media logaritmica ponderata dei valori di rumore.
+### Output
+
+Lo script produce un output con i livelli di rumore equivalente diurno e notturno per ciascun giorno nel seguente formato:
+
+
 
 ### Output
 
