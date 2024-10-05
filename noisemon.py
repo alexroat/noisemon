@@ -24,19 +24,28 @@ CSV_FILE_NAME_PREFIX = os.getenv('CSV_FILE_NAME_PREFIX', 'misure')
 creds = Credentials.from_service_account_file(CREDENTIALS_PATH)
 service = build('drive', 'v3', credentials=creds)
 
-# Nome del file CSV locale
-local_file_name = os.path.join(CSV_FILE_DIR, f"{datetime.now().strftime('%Y%m%d')}_{CSV_FILE_NAME_PREFIX}.csv")
 
-# Inizializzazione del file CSV locale
-def init_csv_file():
-    """Inizializza il file CSV con l'intestazione, se vuoto."""
-    if not os.path.exists(local_file_name) or os.path.getsize(local_file_name) == 0:
-        with open(local_file_name, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(['Timestamp', 'Measure'])
+last_sync = datetime.now()
+
+current_filename = None
+current_file = None
+current_writer = None
+
+def store_measurement( measure=0.0):
+    """Salva una misura nel file CSV."""
+    global current_filename,current_file,current_writer
+    ts=datetime.now();
+    filename=f"{ts.strftime('%Y%m%d')}.csv"
+    if current_filename!=filename:
+        current_filename = filename
+        current_file = open(filename, 'a')
+        current_writer = csv.writer(current_file)
+    current_writer.writerow([ts, measure])
+        
 
 async def notification_handler(sender, data):
     """Gestisce le notifiche dal dispositivo BLE."""
+    global last_sync,current_file,current_filename
     value = data.hex()
     condensed = value.replace(' ', '')
     bytemsg = bytes.fromhex(condensed)
@@ -52,15 +61,19 @@ async def notification_handler(sender, data):
     dba_noise = float(raw_value.decode('ascii'))
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(timestamp, dba_noise)
+    
+    store_measurement(dba_noise)
+    
+    if (datetime.now() - last_sync).total_seconds() >= 300:
+        current_file.flush()
+        await upload_to_google_drive(current_filename)
+        print("File CSV sincronizzato con Google Drive.")
+        last_sync = datetime.now()
+    
 
-    # Scrivi la misura direttamente sul file CSV
-    with open(local_file_name, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow([timestamp, dba_noise])
 
-async def upload_to_google_drive():
+async def upload_to_google_drive(file_name):
     """Carica o aggiorna il file CSV su Google Drive."""
-    file_name = os.path.basename(local_file_name)
     query = f"'{DRIVE_FOLDER_ID}' in parents and name='{file_name}'"
     results = service.files().list(q=query, fields="files(id)").execute()
     files = results.get('files', [])
@@ -69,7 +82,7 @@ async def upload_to_google_drive():
         'name': file_name,
         'parents': [DRIVE_FOLDER_ID]
     }
-    media = MediaFileUpload(local_file_name, mimetype='text/csv')
+    media = MediaFileUpload(file_name, mimetype='text/csv')
 
     try:
         if files:
@@ -82,11 +95,6 @@ async def upload_to_google_drive():
     except Exception as e:
         print(f"Errore durante il salvataggio su Google Drive: {e}")
 
-async def save_and_sync_file():
-    """Task che salva e sincronizza periodicamente il file CSV su Google Drive."""
-    while True:
-        await asyncio.sleep(60)  # Aspetta 60 secondi tra le sincronizzazioni
-        await upload_to_google_drive()
 
 async def measure_task():
     """Task per connettersi al dispositivo BLE e gestire la raccolta delle misure."""
@@ -104,11 +112,9 @@ async def measure_task():
 
 async def main():
     """Funzione principale per avviare i task."""
-    init_csv_file()  # Inizializza il file CSV prima di avviare i task
     # Avvia i task di misurazione e sincronizzazione
     await asyncio.gather(
         measure_task(),
-        save_and_sync_file()
     )
 
 if __name__ == "__main__":
