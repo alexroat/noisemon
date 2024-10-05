@@ -21,3 +21,6 @@ venv/
 # Ignora i file di sistema
 .DS_Store
 *.swp
+
+# ignora le credentials per google
+credentials.json
